@@ -11,6 +11,9 @@ namespace Map_Geometry_to_OBJ
 {
     internal class Map_Geometry_to_OBJ
     {
+        static FileStream fs_read; //Placed in open space so it can be terminated;
+        static FileStream fs_write;
+
         static void WriteV(string k, BinaryWriter bw)
         {
             var xyz = k.Split("".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -55,11 +58,11 @@ namespace Map_Geometry_to_OBJ
         static void ObjToBin(string FilePath, string FilePathTo)
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-            FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
-            StreamReader sr = new StreamReader(fs, Encoding.ASCII);
+            fs_read = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+            StreamReader sr = new StreamReader(fs_read, Encoding.ASCII);
 
-            FileStream fsw = new FileStream(FilePathTo, FileMode.Create, FileAccess.Write);
-            BinaryWriter bw = new BinaryWriter(fsw);
+            fs_write = new FileStream(FilePathTo, FileMode.Create, FileAccess.Write);
+            BinaryWriter bw = new BinaryWriter(fs_write);
 
 
             var counter = sr.Read();
@@ -257,13 +260,9 @@ namespace Map_Geometry_to_OBJ
                     counter = sr.Read();
                 }
 
-
                 if (counter == 102) //f
                 {
                     Fcounter = 0;
-
-
-
 
                     do //f
                     {
@@ -287,7 +286,7 @@ namespace Map_Geometry_to_OBJ
                 what_layer = string.Join("", what_layer.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
 
                 //Ideally the layer variables are within their own array for this. Later optimisation?
-                //TODO
+                //TODO (it's a massive rewrite)
                 switch (what_layer)
                 {
                     case "layer_1":
@@ -425,11 +424,7 @@ namespace Map_Geometry_to_OBJ
             bw.Write(Convert.ToInt16(vertex_layer_count_1));
             foreach (var k in ar_layer_1.Skip(1))
             {
-                //Console.WriteLine(k);
-                var xyz = k.Split("".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                bw.Write(float.Parse(xyz[0]));
-                bw.Write(float.Parse(xyz[1]));
-                bw.Write(float.Parse(xyz[2]));
+                WriteV(k, bw);
             }
             bw.Write(Convert.ToInt16(face_layer_count_1));
             foreach (var k in ar_layer_1_f)
@@ -646,21 +641,20 @@ namespace Map_Geometry_to_OBJ
             Vcounter = 0;
 
             sr.Close();
-            fs.Close();
-            fsw.Close();
+            fs_read.Close();
+            fs_write.Close();
             bw.Close();
-
         }
 
         static void BinToObj(string FilePath, string FilePathTo)
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US"); //change culture because OBJ requries decimal with dot
 
-            FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
-            BinaryReader br = new BinaryReader(fs);
+            fs_read = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs_read);
 
-            FileStream fsw = new FileStream(FilePathTo, FileMode.Create, FileAccess.Write);
-            StreamWriter sw = new StreamWriter(fsw, Encoding.ASCII);
+            fs_write = new FileStream(FilePathTo, FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs_write, Encoding.ASCII);
 
 
             System.IO.File.Copy("textures/TileToolTextures.mtl", System.IO.Path.Combine(Path.GetDirectoryName(FilePathTo), "TileToolTextures.mtl"), true);
@@ -932,11 +926,11 @@ namespace Map_Geometry_to_OBJ
             }
 
 
-            fs.Close();
+            fs_read.Close();
             br.Close();
 
             sw.Close();
-            fsw.Close();
+            fs_write.Close();
 
         }
 
@@ -970,20 +964,26 @@ namespace Map_Geometry_to_OBJ
                     {
                         try
                         {
+                            Console.ForegroundColor = ConsoleColor.Green;
                             Pto = Path.ChangeExtension(Pfrom, ".obj");
                             BinToObj(Pfrom, Pto);
                             Console.WriteLine("Done");
                         }
                         catch(Exception e)
                         {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.WriteLine("Error converting to .obj!");
                             Console.WriteLine(e);
                         }
                     }
                     else
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("File path doesn't exist");
                     }
+                    //Release Filestreams
+                    fs_read?.Close();
+                    fs_write?.Close();
                 }
                 else if(ext == ".obj")
                 { 
@@ -994,11 +994,13 @@ namespace Map_Geometry_to_OBJ
                         {
                             Pto = Path.ChangeExtension(Pfrom, ".bin");
                             ObjToBin(Pfrom, Pto);
+                            Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine("Done");
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("Error converting to .bin!");
+                            //Console.Write("Error converting to .bin!");
+                            Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.WriteLine(e);
                         }
                     }
@@ -1006,14 +1008,16 @@ namespace Map_Geometry_to_OBJ
                     {
                         Console.WriteLine("File path doesn't exist");
                     }
+                    //Release Filestreams
+                    fs_read?.Close();
+                    fs_write?.Close();
                 }
                 else
                 {
                     Console.WriteLine("Wrong file format");
                 }
+                Console.ResetColor();
             }
-            
-
         }
     }
 }
