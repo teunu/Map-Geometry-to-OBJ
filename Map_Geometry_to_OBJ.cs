@@ -990,16 +990,17 @@ namespace Map_Geometry_to_OBJ
                     Console.WriteLine("To bin");
                     if ( File.Exists(Pfrom))
                     {
-                        //try
-                        //{
+                        try
+                        {
                             Pto = Path.ChangeExtension(Pfrom, ".bin");
                             ObjToBin(Pfrom, Pto);
                             Console.WriteLine("Done");
-                        //}
-                        //catch
-                        //{
-                            Console.WriteLine("Error converting to .bin");
-                        //}
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Error converting to .bin!");
+                            Console.WriteLine(e);
+                        }
                     }
                     else
                     {
