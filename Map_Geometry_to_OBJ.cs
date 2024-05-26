@@ -413,9 +413,9 @@ namespace Map_Geometry_to_OBJ
                         T_vertex_layer_count_9 = Vcounter;
                         break;
                     case "Tlayer_10":
-                        ar_Tlayer_1 = layer_buff.ToArray();
-                        ar_Tlayer_1_vt = layer_buff_vt.ToArray();
-                        T_vertex_layer_count_1 = Vcounter;
+                        ar_Tlayer_10 = layer_buff.ToArray();
+                        ar_Tlayer_10_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_10 = Vcounter;
                         break;
                 }
             }
