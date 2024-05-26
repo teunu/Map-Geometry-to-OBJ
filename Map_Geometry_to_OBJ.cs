@@ -13,17 +13,17 @@ namespace Map_Geometry_to_OBJ
     {
         static void WriteV(string k, BinaryWriter bw)
         {
-
-
             var xyz = k.Split("".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            bw.Write(float.Parse(xyz[0]));
-            bw.Write(float.Parse(xyz[1]));
-            bw.Write(float.Parse(xyz[2]));
-            //Console.WriteLine(xyz[0] + " " + xyz[1] + " " + xyz[2]);
+            try
+            {
+                bw.Write(float.Parse(xyz[0]));
+                bw.Write(float.Parse(xyz[1]));
+                bw.Write(float.Parse(xyz[2]));
+            }
+            catch { Console.WriteLine( $"Vertex on {k} likely found empty!"); }
         }
         static void WriteF(string k, BinaryWriter bw, int f_layer_sub)
         {
-            
             var xyz = k.Split("".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             try
             {
@@ -51,52 +51,51 @@ namespace Map_Geometry_to_OBJ
             bw.Write(float.Parse(uv[0]));
             bw.Write(float.Parse(uv[1]));
         }
-        
- 
+
         static void ObjToBin(string FilePath, string FilePathTo)
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
             FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(fs, Encoding.ASCII);
-            
+
             FileStream fsw = new FileStream(FilePathTo, FileMode.Create, FileAccess.Write);
             BinaryWriter bw = new BinaryWriter(fsw);
-            
+
 
             var counter = sr.Read();
-            while( counter == 35) //ignore OBJ comments
+            while (counter == 35) //ignore OBJ comments
             {
                 sr.ReadLine();
                 counter = sr.Read();
             }
 
-            if(counter == 109 && sr.Read() == 116 && sr.Read() == 108 && sr.Read() == 108 && sr.Read() == 105 && sr.Read() == 98) //mtllib
+            if (counter == 109 && sr.Read() == 116 && sr.Read() == 108 && sr.Read() == 108 && sr.Read() == 105 && sr.Read() == 98) //mtllib
             {
                 sr.Read();
                 sr.ReadLine();
                 //Console.WriteLine();
-                
+
                 counter = sr.Read();
             }
 
-            
+
             int Vcounter = 0;
             int Fcounter = 0;
             string wv = "";
             List<string> layer_buff = new List<string>();
             List<string> layer_buff_f = new List<string>();
             List<string> layer_buff_vt = new List<string>();
-            string[] ar_layer_1 =   new string[]{};
-            string[] ar_layer_2 =   new string[]{};
-            string[] ar_layer_3 =   new string[]{};
-            string[] ar_layer_4 =   new string[]{};
-            string[] ar_layer_5 =   new string[]{};
-            string[] ar_layer_6 =   new string[]{};
-            string[] ar_layer_7 =   new string[]{};
-            string[] ar_layer_8 =   new string[]{};
-            string[] ar_layer_9 =   new string[]{};
-            string[] ar_layer_10 =  new string[]{};
-            string[] ar_layer_11 =  new string[]{};
+            string[] ar_layer_1 = new string[] { };
+            string[] ar_layer_2 = new string[] { };
+            string[] ar_layer_3 = new string[] { };
+            string[] ar_layer_4 = new string[] { };
+            string[] ar_layer_5 = new string[] { };
+            string[] ar_layer_6 = new string[] { };
+            string[] ar_layer_7 = new string[] { };
+            string[] ar_layer_8 = new string[] { };
+            string[] ar_layer_9 = new string[] { };
+            string[] ar_layer_10 = new string[] { };
+            string[] ar_layer_11 = new string[] { };
 
             string[] ar_Tlayer_1 = new string[] { };
             string[] ar_Tlayer_2 = new string[] { };
@@ -190,7 +189,7 @@ namespace Map_Geometry_to_OBJ
                 layer_buff_f.Clear();
                 layer_buff_vt.Clear();
                 bool leave = false;
-                
+
                 if (counter == 111) //o
                 {
                     o_group_name = sr.ReadLine();
@@ -206,7 +205,7 @@ namespace Map_Geometry_to_OBJ
                         wv = sr.ReadLine();
 
                         //Console.WriteLine(wv);
-                        
+
                         layer_buff.Add(wv);
 
                         counter = sr.Read();
@@ -227,7 +226,7 @@ namespace Map_Geometry_to_OBJ
                                 break;
                         }
                         Vcounter++;
-                        
+
                     }
                     while (counter == 118 && leave == false);
 
@@ -235,7 +234,7 @@ namespace Map_Geometry_to_OBJ
 
                 if (counter == 118 && leave)//vt
                 {
-                    
+
                     do
                     {
                         sr.Read();
@@ -257,7 +256,7 @@ namespace Map_Geometry_to_OBJ
                     sr.ReadLine();
                     counter = sr.Read();
                 }
-                
+
 
                 if (counter == 102) //f
                 {
@@ -268,7 +267,7 @@ namespace Map_Geometry_to_OBJ
 
                     do //f
                     {
-                        
+
                         string wf = sr.ReadLine();
                         layer_buff_f.Add(wf);
                         counter = sr.Read();
@@ -278,172 +277,148 @@ namespace Map_Geometry_to_OBJ
                     while (counter == 102);
                 }
 
-
-
                 string what_layer = " ";
                 what_layer = "";
                 what_layer = layer_buff.FirstOrDefault();
-                try
-                {
-                    what_layer = string.Join("", what_layer.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
-                }
-                catch
-                {
-                    //Console.WriteLine("err");
-                }
 
-                if (what_layer == "layer_1")
-                {
-                    ar_layer_1 = layer_buff.ToArray();
-                    ar_layer_1_f = layer_buff_f.ToArray();
-                    vertex_layer_count_1 = Vcounter;
-                    f_layer_sub_1 = vertex_sequence_counter;
-                    face_layer_count_1 = Fcounter * 3;
-                }
-                if (what_layer == "layer_2")
-                {
-                    ar_layer_2 = layer_buff.ToArray();
-                    ar_layer_2_f = layer_buff_f.ToArray();
-                    vertex_layer_count_2 = Vcounter;
-                    f_layer_sub_2 = vertex_sequence_counter;
-                    face_layer_count_2 = Fcounter * 3;
-                }
-                if (what_layer == "layer_3")
-                {
-                    ar_layer_3 = layer_buff.ToArray();
-                    ar_layer_3_f = layer_buff_f.ToArray();
-                    vertex_layer_count_3 = Vcounter;
-                    f_layer_sub_3 = vertex_sequence_counter;
-                    face_layer_count_3 = Fcounter * 3;
-                }
-                if (what_layer == "layer_4")
-                {
-                    ar_layer_4 = layer_buff.ToArray();
-                    ar_layer_4_f = layer_buff_f.ToArray();
-                    vertex_layer_count_4 = Vcounter;
-                    f_layer_sub_4 = vertex_sequence_counter;
-                    face_layer_count_4 = Fcounter * 3;
-                }
-                if (what_layer == "layer_5")
-                {
-                    ar_layer_5 = layer_buff.ToArray();
-                    ar_layer_5_f = layer_buff_f.ToArray();
-                    vertex_layer_count_5 = Vcounter;
-                    f_layer_sub_5 = vertex_sequence_counter;
-                    face_layer_count_5 = Fcounter * 3;
-                }
-                if (what_layer == "layer_6")
-                {
-                    ar_layer_6 = layer_buff.ToArray();
-                    ar_layer_6_f = layer_buff_f.ToArray();
-                    vertex_layer_count_6 = Vcounter;
-                    f_layer_sub_6 = vertex_sequence_counter;
-                    face_layer_count_6 = Fcounter * 3;
-                }
-                if (what_layer == "layer_7")
-                {
-                    ar_layer_7 = layer_buff.ToArray();
-                    ar_layer_7_f = layer_buff_f.ToArray();
-                    vertex_layer_count_7 = Vcounter;
-                    f_layer_sub_7 = vertex_sequence_counter;
-                    face_layer_count_7 = Fcounter * 3;
-                }
-                if (what_layer == "layer_8")
-                {
-                    ar_layer_8 = layer_buff.ToArray();
-                    ar_layer_8_f = layer_buff_f.ToArray();
-                    vertex_layer_count_8 = Vcounter;
-                    f_layer_sub_8 = vertex_sequence_counter;
-                    face_layer_count_8 = Fcounter * 3;
-                }
-                if (what_layer == "layer_9")
-                {
-                    ar_layer_9 = layer_buff.ToArray();
-                    ar_layer_9_f = layer_buff_f.ToArray();
-                    vertex_layer_count_9 = Vcounter;
-                    f_layer_sub_9 = vertex_sequence_counter;
-                    face_layer_count_9 = Fcounter * 3;
-                }
-                if (what_layer == "layer_10")
-                {
-                    ar_layer_10 = layer_buff.ToArray();
-                    ar_layer_10_f = layer_buff_f.ToArray();
-                    vertex_layer_count_10 = Vcounter;
-                    f_layer_sub_10 = vertex_sequence_counter;
-                    face_layer_count_10 = Fcounter * 3;
-                }
-                if (what_layer == "layer_11")
-                {
-                    ar_layer_11 = layer_buff.ToArray();
-                    ar_layer_11_f = layer_buff_f.ToArray();
-                    vertex_layer_count_11 = Vcounter;
-                    f_layer_sub_11 = vertex_sequence_counter;
-                    face_layer_count_11 = Fcounter * 3;
-                }
+                if (what_layer == null)
+                    continue; //Layer is a spoof, move on!
 
+                what_layer = string.Join("", what_layer.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
 
+                //Ideally the layer variables are within their own array for this. Later optimisation?
+                //TODO
+                switch (what_layer)
+                {
+                    case "layer_1":
+                        ar_layer_1 = layer_buff.ToArray();
+                        ar_layer_1_f = layer_buff_f.ToArray();
+                        vertex_layer_count_1 = Vcounter;
+                        f_layer_sub_1 = vertex_sequence_counter;
+                        face_layer_count_1 = Fcounter * 3;
+                        break;
+                    case "layer_2":
+                        ar_layer_2 = layer_buff.ToArray();
+                        ar_layer_2_f = layer_buff_f.ToArray();
+                        vertex_layer_count_2 = Vcounter;
+                        f_layer_sub_2 = vertex_sequence_counter;
+                        face_layer_count_2 = Fcounter * 3;
+                        break;
+                    case "layer_3":
+                        ar_layer_3 = layer_buff.ToArray();
+                        ar_layer_3_f = layer_buff_f.ToArray();
+                        vertex_layer_count_3 = Vcounter;
+                        f_layer_sub_3 = vertex_sequence_counter;
+                        face_layer_count_3 = Fcounter * 3;
+                        break;
+                    case "layer_4":
+                        ar_layer_4 = layer_buff.ToArray();
+                        ar_layer_4_f = layer_buff_f.ToArray();
+                        vertex_layer_count_4 = Vcounter;
+                        f_layer_sub_4 = vertex_sequence_counter;
+                        face_layer_count_4 = Fcounter * 3;
+                        break;
+                    case "layer_5":
+                        ar_layer_5 = layer_buff.ToArray();
+                        ar_layer_5_f = layer_buff_f.ToArray();
+                        vertex_layer_count_5 = Vcounter;
+                        f_layer_sub_5 = vertex_sequence_counter;
+                        face_layer_count_5 = Fcounter * 3;
+                        break;
+                    case "layer_6":
+                        ar_layer_6 = layer_buff.ToArray();
+                        ar_layer_6_f = layer_buff_f.ToArray();
+                        vertex_layer_count_6 = Vcounter;
+                        f_layer_sub_6 = vertex_sequence_counter;
+                        face_layer_count_6 = Fcounter * 3;
+                        break;
+                    case "layer_7":
+                        ar_layer_7 = layer_buff.ToArray();
+                        ar_layer_7_f = layer_buff_f.ToArray();
+                        vertex_layer_count_7 = Vcounter;
+                        f_layer_sub_7 = vertex_sequence_counter;
+                        face_layer_count_7 = Fcounter * 3;
+                        break;
+                    case "layer_8":
+                        ar_layer_8 = layer_buff.ToArray();
+                        ar_layer_8_f = layer_buff_f.ToArray();
+                        vertex_layer_count_8 = Vcounter;
+                        f_layer_sub_8 = vertex_sequence_counter;
+                        face_layer_count_8 = Fcounter * 3;
+                        break;
+                    case "layer_9":
+                        ar_layer_9 = layer_buff.ToArray();
+                        ar_layer_9_f = layer_buff_f.ToArray();
+                        vertex_layer_count_9 = Vcounter;
+                        f_layer_sub_9 = vertex_sequence_counter;
+                        face_layer_count_9 = Fcounter * 3;
+                        break;
+                    case "layer_10":
+                        ar_layer_10 = layer_buff.ToArray();
+                        ar_layer_10_f = layer_buff_f.ToArray();
+                        vertex_layer_count_10 = Vcounter;
+                        f_layer_sub_10 = vertex_sequence_counter;
+                        face_layer_count_10 = Fcounter * 3;
+                        break;
+                    case "layer_11":
+                        ar_layer_11 = layer_buff.ToArray();
+                        ar_layer_11_f = layer_buff_f.ToArray();
+                        vertex_layer_count_11 = Vcounter;
+                        f_layer_sub_11 = vertex_sequence_counter;
+                        face_layer_count_11 = Fcounter * 3;
+                        break;
 
-                if (what_layer == "Tlayer_1")
-                {
-                    ar_Tlayer_1 = layer_buff.ToArray();
-                    ar_Tlayer_1_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_1 = Vcounter;
+                    case "Tlayer_1":
+                        ar_Tlayer_1 = layer_buff.ToArray();
+                        ar_Tlayer_1_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_1 = Vcounter;
+                        break;
+                    case "Tlayer_2":
+                        ar_Tlayer_2 = layer_buff.ToArray();
+                        ar_Tlayer_2_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_2 = Vcounter;
+                        break;
+                    case "Tlayer_3":
+                        ar_Tlayer_3 = layer_buff.ToArray();
+                        ar_Tlayer_3_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_3 = Vcounter;
+                        break;
+                    case "Tlayer_4":
+                        ar_Tlayer_4 = layer_buff.ToArray();
+                        ar_Tlayer_4_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_4 = Vcounter;
+                        break;
+                    case "Tlayer_5":
+                        ar_Tlayer_5 = layer_buff.ToArray();
+                        ar_Tlayer_5_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_5 = Vcounter;
+                        break;
+                    case "Tlayer_6":
+                        ar_Tlayer_6 = layer_buff.ToArray();
+                        ar_Tlayer_6_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_6 = Vcounter;
+                        break;
+                    case "Tlayer_7":
+                        ar_Tlayer_7 = layer_buff.ToArray();
+                        ar_Tlayer_7_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_7 = Vcounter;
+                        break;
+                    case "Tlayer_8":
+                        ar_Tlayer_8 = layer_buff.ToArray();
+                        ar_Tlayer_8_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_8 = Vcounter;
+                        break;
+                    case "Tlayer_9":
+                        ar_Tlayer_9 = layer_buff.ToArray();
+                        ar_Tlayer_9_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_9 = Vcounter;
+                        break;
+                    case "Tlayer_10":
+                        ar_Tlayer_1 = layer_buff.ToArray();
+                        ar_Tlayer_1_vt = layer_buff_vt.ToArray();
+                        T_vertex_layer_count_1 = Vcounter;
+                        break;
                 }
-                if (what_layer == "Tlayer_2")
-                {
-                    ar_Tlayer_2 = layer_buff.ToArray();
-                    ar_Tlayer_2_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_2 = Vcounter;
-                }
-                if (what_layer == "Tlayer_3")
-                {
-                    ar_Tlayer_3 = layer_buff.ToArray();
-                    ar_Tlayer_3_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_3 = Vcounter;
-                }
-                if (what_layer == "Tlayer_4")
-                {
-                    ar_Tlayer_4 = layer_buff.ToArray();
-                    ar_Tlayer_4_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_4 = Vcounter;
-                }
-                if (what_layer == "Tlayer_5")
-                {
-                    ar_Tlayer_5 = layer_buff.ToArray();
-                    ar_Tlayer_5_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_5 = Vcounter;
-                }
-                if (what_layer == "Tlayer_6")
-                {
-                    ar_Tlayer_6 = layer_buff.ToArray();
-                    ar_Tlayer_6_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_6 = Vcounter;
-                }
-                if (what_layer == "Tlayer_7")
-                {
-                    ar_Tlayer_7 = layer_buff.ToArray();
-                    ar_Tlayer_7_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_7 = Vcounter;
-                }
-                if (what_layer == "Tlayer_8")
-                {
-                    ar_Tlayer_8 = layer_buff.ToArray();
-                    ar_Tlayer_8_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_8 = Vcounter;
-                }
-                if (what_layer == "Tlayer_9")
-                {
-                    ar_Tlayer_9 = layer_buff.ToArray();
-                    ar_Tlayer_9_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_9 = Vcounter;
-                }
-                if (what_layer == "Tlayer_10")
-                {
-                    ar_Tlayer_10 = layer_buff.ToArray();
-                    ar_Tlayer_10_vt = layer_buff_vt.ToArray();
-                    T_vertex_layer_count_10 = Vcounter;
-                }
-
             }
 
 
@@ -455,7 +430,6 @@ namespace Map_Geometry_to_OBJ
                 bw.Write(float.Parse(xyz[0]));
                 bw.Write(float.Parse(xyz[1]));
                 bw.Write(float.Parse(xyz[2]));
-
             }
             bw.Write(Convert.ToInt16(face_layer_count_1));
             foreach (var k in ar_layer_1_f)
@@ -479,38 +453,38 @@ namespace Map_Geometry_to_OBJ
                 //Console.WriteLine(n1 + " " + n2 + " " + n3);
             }
 
-                bw.Write(Convert.ToInt16(vertex_layer_count_2));
-                foreach (var k in ar_layer_2.Skip(1))
-                {
-                    WriteV(k, bw);
-                }
-                bw.Write(Convert.ToInt16(face_layer_count_2));
-                foreach (var k in ar_layer_2_f)
-                {
-                    WriteF(k, bw, f_layer_sub_2);
-                }
+            bw.Write(Convert.ToInt16(vertex_layer_count_2));
+            foreach (var k in ar_layer_2.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_2));
+            foreach (var k in ar_layer_2_f)
+            {
+                WriteF(k, bw, f_layer_sub_2);
+            }
 
-                    bw.Write(Convert.ToInt16(vertex_layer_count_3));
-                    foreach (var k in ar_layer_3.Skip(1))
-                    {
-                        WriteV(k, bw);
-                    }
-                    bw.Write(Convert.ToInt16(face_layer_count_3));
-                    foreach (var k in ar_layer_3_f)
-                    {
-                        WriteF(k, bw, f_layer_sub_3);
-                    }
+            bw.Write(Convert.ToInt16(vertex_layer_count_3));
+            foreach (var k in ar_layer_3.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_3));
+            foreach (var k in ar_layer_3_f)
+            {
+                WriteF(k, bw, f_layer_sub_3);
+            }
 
-                        bw.Write(Convert.ToInt16(vertex_layer_count_4));
-                        foreach (var k in ar_layer_4.Skip(1))
-                        {
-                            WriteV(k, bw);
-                        }
-                        bw.Write(Convert.ToInt16(face_layer_count_4));
-                        foreach (var k in ar_layer_4_f)
-                        {
-                            WriteF(k, bw, f_layer_sub_4);
-                        }
+            bw.Write(Convert.ToInt16(vertex_layer_count_4));
+            foreach (var k in ar_layer_4.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_4));
+            foreach (var k in ar_layer_4_f)
+            {
+                WriteF(k, bw, f_layer_sub_4);
+            }
 
             bw.Write(Convert.ToInt16(vertex_layer_count_5));
             foreach (var k in ar_layer_5.Skip(1))
@@ -523,38 +497,38 @@ namespace Map_Geometry_to_OBJ
                 WriteF(k, bw, f_layer_sub_5);
             }
 
-                bw.Write(Convert.ToInt16(vertex_layer_count_6));
-                foreach (var k in ar_layer_6.Skip(1))
-                {
-                    WriteV(k, bw);
-                }
-                bw.Write(Convert.ToInt16(face_layer_count_6));
-                foreach (var k in ar_layer_6_f)
-                {
-                    WriteF(k, bw, f_layer_sub_6);
-                }
+            bw.Write(Convert.ToInt16(vertex_layer_count_6));
+            foreach (var k in ar_layer_6.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_6));
+            foreach (var k in ar_layer_6_f)
+            {
+                WriteF(k, bw, f_layer_sub_6);
+            }
 
-                    bw.Write(Convert.ToInt16(vertex_layer_count_7));
-                    foreach (var k in ar_layer_7.Skip(1))
-                    {
-                        WriteV(k, bw);
-                    }
-                    bw.Write(Convert.ToInt16(face_layer_count_7));
-                    foreach (var k in ar_layer_7_f)
-                    {
-                        WriteF(k, bw, f_layer_sub_7);
-                    }
+            bw.Write(Convert.ToInt16(vertex_layer_count_7));
+            foreach (var k in ar_layer_7.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_7));
+            foreach (var k in ar_layer_7_f)
+            {
+                WriteF(k, bw, f_layer_sub_7);
+            }
 
-                        bw.Write(Convert.ToInt16(vertex_layer_count_8));
-                        foreach (var k in ar_layer_8.Skip(1))
-                        {
-                            WriteV(k, bw);
-                        }
-                        bw.Write(Convert.ToInt16(face_layer_count_8));
-                        foreach (var k in ar_layer_8_f)
-                        {
-                            WriteF(k, bw, f_layer_sub_8);
-                        }
+            bw.Write(Convert.ToInt16(vertex_layer_count_8));
+            foreach (var k in ar_layer_8.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_8));
+            foreach (var k in ar_layer_8_f)
+            {
+                WriteF(k, bw, f_layer_sub_8);
+            }
 
             bw.Write(Convert.ToInt16(vertex_layer_count_9));
             foreach (var k in ar_layer_9.Skip(1))
@@ -567,27 +541,27 @@ namespace Map_Geometry_to_OBJ
                 WriteF(k, bw, f_layer_sub_9);
             }
 
-                bw.Write(Convert.ToInt16(vertex_layer_count_10));
-                foreach (var k in ar_layer_10.Skip(1))
-                {
-                    WriteV(k, bw);
-                }
-                bw.Write(Convert.ToInt16(face_layer_count_10));
-                foreach (var k in ar_layer_10_f)
-                {
-                    WriteF(k, bw, f_layer_sub_10);
-                }
+            bw.Write(Convert.ToInt16(vertex_layer_count_10));
+            foreach (var k in ar_layer_10.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_10));
+            foreach (var k in ar_layer_10_f)
+            {
+                WriteF(k, bw, f_layer_sub_10);
+            }
 
-                    bw.Write(Convert.ToInt16(vertex_layer_count_11));
-                    foreach (var k in ar_layer_11.Skip(1))
-                    {
-                        WriteV(k, bw);
-                    }
-                    bw.Write(Convert.ToInt16(face_layer_count_11));
-                    foreach (var k in ar_layer_11_f)
-                    {
-                        WriteF(k, bw, f_layer_sub_11);
-                    }
+            bw.Write(Convert.ToInt16(vertex_layer_count_11));
+            foreach (var k in ar_layer_11.Skip(1))
+            {
+                WriteV(k, bw);
+            }
+            bw.Write(Convert.ToInt16(face_layer_count_11));
+            foreach (var k in ar_layer_11_f)
+            {
+                WriteF(k, bw, f_layer_sub_11);
+            }
 
             vt = 0;
             bw.Write(Convert.ToInt16(T_vertex_layer_count_1));
@@ -675,7 +649,7 @@ namespace Map_Geometry_to_OBJ
             fs.Close();
             fsw.Close();
             bw.Close();
-            
+
         }
 
         static void BinToObj(string FilePath, string FilePathTo)
@@ -968,9 +942,9 @@ namespace Map_Geometry_to_OBJ
 
         static string GetSafeFilename(string filename)
         {
+            string unencapsulated = String.Join("", filename.Split('"'));
 
             return Path.GetInvalidPathChars().Aggregate(filename, (current, c) => current.Replace(c.ToString(), string.Empty));
-
         }
 
         static void Main(string[] args)
@@ -1000,9 +974,10 @@ namespace Map_Geometry_to_OBJ
                             BinToObj(Pfrom, Pto);
                             Console.WriteLine("Done");
                         }
-                        catch
+                        catch(Exception e)
                         {
-                            Console.WriteLine("Error converting to .obj");
+                            Console.WriteLine("Error converting to .obj!");
+                            Console.WriteLine(e);
                         }
                     }
                     else
@@ -1015,16 +990,16 @@ namespace Map_Geometry_to_OBJ
                     Console.WriteLine("To bin");
                     if ( File.Exists(Pfrom))
                     {
-                        try
-                        {
+                        //try
+                        //{
                             Pto = Path.ChangeExtension(Pfrom, ".bin");
                             ObjToBin(Pfrom, Pto);
                             Console.WriteLine("Done");
-                        }
-                        catch
-                        {
+                        //}
+                        //catch
+                        //{
                             Console.WriteLine("Error converting to .bin");
-                        }
+                        //}
                     }
                     else
                     {
